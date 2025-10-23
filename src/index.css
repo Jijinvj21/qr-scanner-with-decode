@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply m-0 min-w-[320px] min-h-screen bg-black;
+  }
+}
+
+@layer components {
+
+  /* Hide the library's red scanning box */
+  .scanner-box>div:first-child svg,
+  .scanner-box>div:first-child canvas {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  .scanner-box>div:first-child>div:not(.scanner-overlay) [style*="border"] {
+    border: none !important;
+  }
+
+  /* Animate the scanning line inside SVG */
+  .scanner-corners path:last-of-type {
+    animation: scanLine 3s linear infinite;
+    transform-origin: center;
+  }
+
+  @keyframes scanLine {
+    0% {
+      transform: translateY(-90px);
+    }
+
+    50% {
+      transform: translateY(90px);
+    }
+
+    100% {
+      transform: translateY(-90px);
+    }
+  }
+}
