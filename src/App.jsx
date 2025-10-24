@@ -38,9 +38,23 @@ function App() {
                 'qr_code',
                 'micro_qr_code',
                 'rm_qr_code',
+                'maxi_code',
                 'data_matrix',
                 'aztec',
-                'pdf417'
+                'pdf417',
+                'ean_13',
+                'ean_8',
+                'upc_a',
+                'upc_e',
+                'code_128',
+                'code_39',
+                'code_93',
+                'codabar',
+                'itf',
+                'rss_14',
+                'rss_expanded',
+                'databar',
+                'databar_expanded'
               ]}
               scanDelay={300}
               allowMultiple={false}
