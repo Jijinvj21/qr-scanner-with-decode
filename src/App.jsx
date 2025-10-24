@@ -52,7 +52,11 @@ function App() {
                 'codabar',
                 'itf',
                 'databar',
-                'databar_expanded'
+                'databar_expanded',
+                'dx_film_edge',
+                'linear_codes',
+                'matrix_codes',
+                'unknown',
               ]}
               scanDelay={300}
               allowMultiple={false}
