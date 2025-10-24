@@ -51,8 +51,6 @@ function App() {
                 'code_93',
                 'codabar',
                 'itf',
-                'rss_14',
-                'rss_expanded',
                 'databar',
                 'databar_expanded'
               ]}
