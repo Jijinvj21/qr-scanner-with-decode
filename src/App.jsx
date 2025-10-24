@@ -7,8 +7,11 @@ function App() {
 
   const handleScan = (result) => {
     if (result && result.length > 0) {
-      setScannedData(result[0].rawValue)
-      setError('')
+      const data = result[0].rawValue
+      if (data && data.trim() !== '') {
+        setScannedData(data)
+        setError('')
+      }
     }
   }
 
@@ -25,8 +28,22 @@ function App() {
               onScan={handleScan}
               onError={handleError}
               constraints={{
-                facingMode: 'environment'
+                facingMode: 'environment',
+                aspectRatio: 1,
+                advanced: [
+                  { zoom: 2.0 }
+                ]
               }}
+              formats={[
+                'qr_code',
+                'micro_qr_code',
+                'rm_qr_code',
+                'data_matrix',
+                'aztec',
+                'pdf417'
+              ]}
+              scanDelay={300}
+              allowMultiple={false}
               styles={{
                 container: {
                   width: '100%',
