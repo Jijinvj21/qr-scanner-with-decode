@@ -16,6 +16,54 @@
 
 @layer components {
 
+  /* Loading spinner - using Tailwind's animate-spin utility */
+
+  /* Style html5-qrcode scanner */
+  #qr-reader {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  #qr-reader video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 0.75rem;
+  }
+
+  /* Hide the default UI elements from html5-qrcode */
+  #qr-reader__scan_region,
+  #qr-reader__dashboard,
+  #qr-reader__dashboard_section,
+  #qr-reader__camera_permission_button,
+  #qr-reader__dashboard_section_csr button {
+    display: none !important;
+  }
+
+  /* Hide the white/red scanning box */
+  #qr-reader__scan_region img {
+    display: none !important;
+  }
+
+  #qr-reader div[style*="border"] {
+    border: none !important;
+  }
+
+  #qr-shaded-region {
+    display: none !important;
+  }
+
+  /* Hide all scanning region overlays */
+  #qr-reader canvas {
+    display: none !important;
+  }
+
+  #qr-reader>div>div:not(video) {
+    border: none !important;
+    background: transparent !important;
+  }
+
   /* Hide the library's red scanning box */
   .scanner-box>div:first-child svg,
   .scanner-box>div:first-child canvas {

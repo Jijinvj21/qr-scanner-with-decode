@@ -1,76 +1,128 @@
-import { useState } from 'react'
-import { Scanner } from '@yudiel/react-qr-scanner'
+import { useState, useEffect, useRef } from 'react'
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 
 function App() {
   const [scannedData, setScannedData] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const scannerRef = useRef(null)
+  const html5QrCodeRef = useRef(null)
+  const isScannerInitialized = useRef(false) // Prevent double initialization
 
-  const handleScan = (result) => {
-    if (result && result.length > 0) {
-      const data = result[0].rawValue
-      if (data && data.trim() !== '') {
-        setScannedData(data)
+  // Initialize scanner
+  useEffect(() => {
+    // Prevent double initialization (React StrictMode runs effects twice in dev)
+    if (isScannerInitialized.current) {
+      return
+    }
+
+    isScannerInitialized.current = true
+    let html5QrCode = null
+    let isScanning = false
+
+    const config = {
+      fps: 20,  // Increased from 10 for faster detection
+      qrbox: { width: 250, height: 250 },
+      aspectRatio: 1.0,
+      disableFlip: false,
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.AZTEC,
+        Html5QrcodeSupportedFormats.CODABAR,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.CODE_93,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.DATA_MATRIX,
+        Html5QrcodeSupportedFormats.MAXICODE,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.PDF_417,
+        Html5QrcodeSupportedFormats.RSS_14,
+        Html5QrcodeSupportedFormats.RSS_EXPANDED,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION,
+      ],
+    }
+
+    const onScanSuccess = (decodedText, decodedResult) => {
+      console.log('QR Code detected:', decodedText)
+      console.log('Result:', decodedResult)
+      if (decodedText && decodedText.trim() !== '') {
+        setScannedData(decodedText)
         setError('')
       }
     }
-  }
 
-  const handleError = (err) => {
-    setError(err?.message || 'Error accessing camera')
-  }
+    const onScanFailure = (error) => {
+      // Silently ignore NotFoundException (no QR code in view)
+      // This is normal when camera is searching
+    }
+
+    const startScanner = async () => {
+      try {
+        html5QrCode = new Html5Qrcode('qr-reader')
+        html5QrCodeRef.current = html5QrCode
+
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          config,
+          onScanSuccess,
+          onScanFailure
+        )
+
+        isScanning = true
+        setIsLoading(false)
+        setError('')
+      } catch (err) {
+        console.error('Scanner start error:', err)
+        setIsLoading(false)
+        setError(err?.message || 'Error accessing camera')
+      }
+    }
+
+    // Only start if element exists and not already scanning
+    const element = document.getElementById('qr-reader')
+    if (element && !isScanning) {
+      startScanner()
+    }
+
+    // Cleanup on unmount
+    return () => {
+      isScannerInitialized.current = false
+      if (html5QrCode && isScanning) {
+        html5QrCode
+          .stop()
+          .then(() => {
+            html5QrCode.clear()
+          })
+          .catch((err) => console.error('Error stopping scanner:', err))
+      }
+    }
+  }, []) // Empty dependency array - only run once
 
   return (
     <div className="min-h-screen bg-black text-white px-4 py-8 md:py-16 flex flex-col items-center justify-center">
       <div className="w-full max-w-md mx-auto">
         <div className="mb-8">
           <div className="scanner-box relative w-full aspect-square max-w-md mx-auto mb-6 bg-black overflow-hidden rounded-xl">
-            <Scanner
-              onScan={handleScan}
-              onError={handleError}
-              constraints={{
-                facingMode: 'environment',
-                aspectRatio: 1,
-                advanced: [
-                  { zoom: 2.0 }
-                ]
-              }}
-              formats={[
-                'qr_code',
-                'micro_qr_code',
-                'rm_qr_code',
-                'maxi_code',
-                'data_matrix',
-                'aztec',
-                'pdf417',
-                'ean_13',
-                'ean_8',
-                'upc_a',
-                'upc_e',
-                'code_128',
-                'code_39',
-                'code_93',
-                'codabar',
-                'itf',
-                'databar',
-                'databar_expanded',
-                'dx_film_edge',
-                'linear_codes',
-                'matrix_codes',
-                'unknown',
-              ]}
-              scanDelay={300}
-              allowMultiple={false}
-              styles={{
-                container: {
-                  width: '100%',
-                  height: '100%',
-                  position: 'relative'
-                },
-                video: {
-                  objectFit: 'cover'
-                }
-              }}
-            />
+            {/* HTML5 QR Code Scanner Container */}
+            <div id="qr-reader" ref={scannerRef} className="w-full h-full"></div>
+
+            {/* Loading State */}
+            {isLoading && (
+              <div className="absolute inset-0 bg-black flex flex-col items-center justify-center z-20">
+                <div className="loading-spinner mb-4">
+                  <svg className="animate-spin h-12 w-12 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+                <p className="text-white text-sm font-medium">Initializing Camera...</p>
+                <p className="text-gray-400 text-xs mt-2">Please allow camera access</p>
+              </div>
+            )}
 
             {/* Corner brackets overlay */}
             <div className="scanner-overlay absolute inset-0 w-full h-full pointer-events-none z-10">
@@ -97,6 +149,14 @@ function App() {
           </div>
 
           <p className="text-base text-white text-center m-0 px-4 leading-normal">Scan any QR code to Check-in Athletes</p>
+
+          {/* Scanner Status Indicator */}
+          {!isLoading && !error && (
+            <div className="flex items-center justify-center gap-2 mt-3">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <p className="text-xs text-green-400 font-medium">Scanner Ready</p>
+            </div>
+          )}
         </div>
 
         {error && (
